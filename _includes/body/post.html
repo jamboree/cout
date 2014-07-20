@@ -1,0 +1,46 @@
+{% assign body_post_html = null %}
+{% capture body_post_html %}
+	{% assign enable_disqus = false %}
+
+	{% if site.disqus.enabled and page.disqus == null %}
+		{% assign enable_disqus = true %}
+	{% elsif site.disqus.enabled and page.disqus.enabled == null %}
+		{% assign enable_disqus = true %}
+	{% elsif site.disqus.enabled and page.disqus.enabled %}
+		{% assign enable_disqus = true %}
+	{% endif %}
+
+	<body>
+		{% include body/sections/navbar.html %}
+		{% include body/sections/alerts_and_notices/site.html %}
+        {% include body/sections/javascript.html %}
+        <script type="text/javascript" src="http://datejs.googlecode.com/svn/trunk/build/date-en-US.js"></script>
+		<div class="container">
+			<div class="row">
+				<div class="span8">
+					<div class="ghpb-post">
+						{% include body/sections/header/post.html %}
+						{% include body/sections/alerts_and_notices/post.html %}
+						{{ content }}
+                        <div id="comments-header">
+                            <h4>Comments (<span id="comments-count">?</span>) <a href="https://github.com/{{ site.user_repo }}/issues/{{ page.commentId }}#new_comment_field_write_bucket">+</a></h4>
+                        </div>
+                        <div id="comments"></div>
+                        <script src="{{ site.url }}/js/access-comment.js"></script>
+                        <script type="text/javascript">
+                            loadComments("{{ site.user_repo }}", "{{page.commentId}}");
+                        </script>
+                        <noscript>See <a href="https://github.com/{{ site.user_repo }}/issues/{{ page.commentId }}">here</a></noscript>
+					</div>
+				</div>
+				<div class="span3 offset1">
+					{% include body/sections/brief-bio.html %}
+					{% include body/sections/navlists.html %}
+				</div>
+			</div>
+			{% include body/sections/footer.html %}
+		</div>
+		{% include body/sections/javascript/post/disqus.html %}
+	</body>
+{% endcapture %}
+{{ body_post_html | remove:'	' }}

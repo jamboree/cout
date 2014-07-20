@@ -1,0 +1,5 @@
+{% assign navbar_brand_html = null %}
+{% capture navbar_brand_html %}
+	<a class="brand" href="{{ site.url }}/"><strong>{{ site.brand }}</strong></a>
+{% endcapture %}
+{{ navbar_brand_html | strip_newlines | remove:'	' }}
