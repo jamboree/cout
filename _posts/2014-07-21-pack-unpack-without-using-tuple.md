@@ -1,7 +1,7 @@
 ---
 layout : post
 title : Pack/Unpack without Using Tuple
-commentId : 1
+commentId : 2
 category: Tricks
 tags:
   - c++1y
