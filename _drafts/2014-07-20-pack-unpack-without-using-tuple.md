@@ -18,7 +18,7 @@ Packing the args is quite easy:
 auto args = std::make_tuple(1, "hey");
 {% endhighlight %}
 
-Unpacking needs more code, we write a helper function `invoke` that can be reused:
+Unpacking needs more code, we first write a helper function `invoke` that can be reused:
 
 {% highlight c++ %}
 template<class F, std::size_t... Ns, class... Ts>
@@ -42,7 +42,7 @@ invoke(do_something, args);
 
 Not hard at all.
 But do we really need `std::tuple` for that kind of thing?
-Well, no, you know I'll say. In c++1y, the language itself provides us a powerful tool -- generic lambda.
+Well, no. In c++1y, the language itself provides us a powerful tool -- generic lambda.
 
 ### The Alternative
 
@@ -63,8 +63,7 @@ auto p = pack(1, "hey");
 p(do_something);
 {% endhighlight %}
 
-But wait, it doesn't support move-only types.
-And there's another nice c++1y feature -- init-capture -- which lets you do something like:
+However, it doesn't support move-only types. Before we step further, there's another noticeable c++1y feature -- init-capture, which lets you do something like:
 
 {% highlight c++ %}
 template<class T>
@@ -93,7 +92,7 @@ auto pack(T... t)
 Looks great, but it won't compile!
 There's a [thread](https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/ePRzn4K7VcM) in the ISO C++ group discussing this issue if you're interested.
 
-Anyway, we have to find a workaround. We know that people can already do this in c++11, without init-capture, the situation is same here. Here's the idea: make a move-proxy the does move when copying.
+Anyway, we have to find a workaround. We know that people can already do this in c++11 without init-capture, so the situation is same here. Here's the basic idea: make a move-proxy the does move when copying.
 
 {% highlight c++ %}
 template<class T>
@@ -118,7 +117,7 @@ struct mover
 };
 {% endhighlight %}
 
-And to decide when is needed or beneficial to apply the `mover`, we write a template alias `wrap_t`:
+And to decide when is needed or beneficial to apply the `mover`, we write a helper trait `wrap_t`:
 
 {% highlight c++ %}
 template<class T>
@@ -144,9 +143,9 @@ using wrap_t = typename std::conditional
     >::type;
 {% endhighlight %}
 
-`boost::has_trivial_copy_constructor` seems to report false positive, so we also use `std::is_copy_constructible`.
+But `boost::has_trivial_copy_constructor` seems to report false positive, so we also use `std::is_copy_constructible` here.
 
-And we can implement `pack` now:
+We can implement `pack` as below:
 
 {% highlight c++ %}
 template<class... Ts>
@@ -164,11 +163,11 @@ auto const pack = [](auto&&... ts)
 };
 {% endhighlight %}
 
-If you're confused about `static_cast<decltype(ts)>(ts)...`, it's just perfect forwarding, as `std::forward`, written in another form.
+If you're confused about `static_cast<decltype(ts)>(ts)...`, it's just perfect forwarding, exactly the same as `std::forward`, written in another form.
 
-You can use normal function template instead of generic lambda here, but I'd like to use lambda when possible since it may provide some benefit over function template, for example, the symbol names are in general shorter than those of template functions, and it's also a factor to compile/link time.
+You can use normal function template instead of generic lambda here, but I'd like to use lambda when possible since it may provide some benefit over function template, for example, the symbol names of lambda are in general shorter than those of template functions, and it's also a factor of compile/link time.
 
-We're almost done here, so let's test it. We write a special class `A` to test the behavior:
+We're almost done, it's time to test. Let's write a special class `A` to test the behavior:
 
 {% highlight c++ %}
 struct A
@@ -187,7 +186,7 @@ struct A
 };
 {% endhighlight %}
 
-It's show time:
+Now test it:
 
 {% highlight c++ %}
 A a;
@@ -211,4 +210,4 @@ p3------------
 copy
 {% endhighlight %}
 
-Note when constructing `p1`, `A` is moved twice, if the language supports init-capture on parameter pack, there'd be only once. Still, there's a workaround if you really care about it, but let me stop here :p
+Note when constructing `p1`, `A` is moved twice, if the language supports init-capture on parameter pack, there'd be only one move. Still, there's a workaround if you really care about it, but let me stop here :p
