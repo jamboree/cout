@@ -52,7 +52,10 @@ The idea is simple:
 template<class... T>
 auto pack(T... t)
 {
-    return [=](auto&& f){f(t...);};
+    return [=](auto&& f)->decltype(auto)
+    {
+        f(t...);
+    };
 };
 {% endhighlight %}
 
@@ -92,7 +95,7 @@ auto pack(T... t)
 Looks great, but it won't compile!
 There's a [thread](https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/ePRzn4K7VcM) in the ISO C++ group discussing this issue if you're interested.
 
-Anyway, we have to find a workaround. We know that people can already do this in c++11 without init-capture, so the situation is same here. Here's the basic idea: make a move-proxy the does move when copying.
+Anyway, we have to find a workaround. We know that people can already do this in c++11 without init-capture, so the situation is same here. The basic idea is: make a move-proxy the does move when copying.
 
 {% highlight c++ %}
 template<class T>
@@ -163,11 +166,11 @@ auto const pack = [](auto&&... ts)
 };
 {% endhighlight %}
 
-If you're confused about `static_cast<decltype(ts)>(ts)...`, it's just perfect forwarding, exactly the same as `std::forward`, written in another form.
+If you're confused about `static_cast<decltype(ts)>`, it's just perfect forwarding, exactly the same as `std::forward`, written in another form.
 
-You can use normal function template instead of generic lambda here, but I'd like to use lambda when possible since it may provide some benefit over function template, for example, the symbol names of lambda are in general shorter than those of template functions, and it's also a factor of compile/link time.
+You can use normal function template instead of generic lambda here, but I'd like to use lambda when possible since it may provide some benefit over function template, for example, the symbol names of lambda are in general shorter than those of template functions, and it's also a effective factor of compile/link time.
 
-We're almost done, it's time to test. Let's write a special class `A` to test the behavior:
+We're almost done here, it's about time to test. Let's write a special class `A` to test the behavior:
 
 {% highlight c++ %}
 struct A
