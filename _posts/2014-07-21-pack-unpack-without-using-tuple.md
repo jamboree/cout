@@ -8,7 +8,9 @@ tags:
   - lambda
 ---
 
-Before the journey start, let's see how we do args pack/unpack using `std::tuple` and `std::integer_sequence`.
+Args packing/unpacking is particularly useful when the args aren't handled immediately, but stored for later invocation.
+In this post, I'll show you a practical way to do it without resorting to tuple.
+Before the journey start, let's see how we used to do args packing/unpacking using `std::tuple` and `std::integer_sequence`.
 
 ### The Offical Way
 
@@ -22,15 +24,15 @@ Unpacking needs more code, we first write a helper function `invoke` that can be
 
 {% highlight c++ %}
 template<class F, std::size_t... Ns, class... Ts>
-void invoke_impl(F&& f, std::index_sequence<Ns...>, std::tuple<Ts...> const& params)
+decltype(auto) invoke_impl(F&& f, std::index_sequence<Ns...>, std::tuple<Ts...> const& params)
 {
-    f(std::get<Ns>(params)...);
+    return f(std::get<Ns>(params)...);
 }
 
 template<class F, class... Ts>
-void invoke(F&& f, std::tuple<Ts...> const& params)
+decltype(auto) invoke(F&& f, std::tuple<Ts...> const& params)
 {
-    invoke_impl(f, std::make_index_sequence<sizeof...(Ts)>(), params);
+    return invoke_impl(f, std::make_index_sequence<sizeof...(Ts)>(), params);
 }
 {% endhighlight %}
 
@@ -54,16 +56,16 @@ auto pack(T... t)
 {
     return [=](auto&& f)->decltype(auto)
     {
-        f(t...);
+        return f(t...);
     };
 };
 {% endhighlight %}
 
-And the usage is also simple:
+And the usage is very simple as well:
 
 {% highlight c++ %}
-auto p = pack(1, "hey");
-p(do_something);
+auto args = pack(1, "hey");
+args(do_something);
 {% endhighlight %}
 
 However, it doesn't support move-only types. Before we step further, there's another noticeable c++1y feature -- init-capture, which lets you do something like:
@@ -74,7 +76,7 @@ auto pack(T t)
 {
     return [t=std::move(t)](auto&& f)->decltype(auto)
     {
-        f(t);
+        return f(t);
     };
 };
 {% endhighlight %}
@@ -87,7 +89,7 @@ auto pack(T... t)
 {
     return [t=std::move(t)...](auto&& f)->decltype(auto)
     {
-        f(t...);
+        return f(t...);
     };
 };
 {% endhighlight %}
@@ -170,7 +172,7 @@ If you're confused about `static_cast<decltype(ts)>`, it's just perfect forwardi
 
 You can use normal function template instead of generic lambda here, but I'd like to use lambda when possible since it may provide some benefit over function template, for example, the symbol names of lambda are in general shorter than those of template functions, and it's also a effective factor of compile/link time.
 
-We're almost done here, it's about time to test. Let's write a special class `A` to test the behavior:
+We're almost done here. Let's write a special class `A` to test the behavior:
 
 {% highlight c++ %}
 struct A
@@ -213,4 +215,4 @@ p3------------
 copy
 {% endhighlight %}
 
-Note when constructing `p1`, `A` is moved twice, if the language supports init-capture on parameter pack, there'd be only one move. Still, there's a workaround if you really care about it, but let me stop here :p
+Note that when constructing `p1`, `A` is moved twice, if the language supports init-capture on parameter pack, there'd be only one move. Still, there's some workaround if you really care about it, but let me stop here :p
