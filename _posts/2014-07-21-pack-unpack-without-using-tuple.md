@@ -25,7 +25,7 @@ Unpacking needs more code, we first write a helper function `invoke` that can be
 
 {% highlight c++ %}
 template<class F, std::size_t... Ns, class... Ts>
-decltype(auto) invoke_impl(F&& f, std::index_sequence<Ns...>, std::tuple<Ts...> const& params)
+decltype(auto) invoke_impl(F& f, std::index_sequence<Ns...>, std::tuple<Ts...> const& params)
 {
     return f(std::get<Ns>(params)...);
 }
@@ -171,7 +171,7 @@ auto const pack = [](auto&&... ts)
 
 If you're confused about `static_cast<decltype(ts)>`, it's just perfect forwarding, exactly the same as `std::forward`, written in another form.
 
-You can use normal function template instead of generic lambda here, but I'd like to use lambda when possible since it may provide some benefit over function template, for example, the symbol names of lambda are in general shorter than those of template functions, and it's also a effective factor of compile/link time.
+You can use normal function template instead of generic lambda here, but I'd like to use lambda when possible since it may provide some benefit over function template, for example, the symbol names of lambda are in general shorter than those of template functions with many types encoded, and it can be an effective factor of compile/link time.
 
 We're almost done here. Let's write a special class `A` to test the behavior:
 
