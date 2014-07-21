@@ -10,7 +10,8 @@ tags:
 
 Args packing/unpacking is particularly useful when the args aren't handled immediately, but stored for later invocation.
 In this post, I'll show you a practical way to do it without resorting to tuple.
-Before the journey start, let's see how we used to do args packing/unpacking using `std::tuple` and `std::integer_sequence`.
+
+Before the journey start, let's see how we used to do args packing/unpacking using `std::tuple` and `std::index_sequence`.
 
 ### The Offical Way
 
