@@ -42,7 +42,7 @@ In the user code, you have to call it in the same way:
 factorial(factorial, n);
 {% endhighlight %}
 
-It's a bit ugly because the functor itself have to appear twice in one call.
+It's a bit ugly because the functor itself has to appear twice in one call.
 To make it more appealing, with the same signature as a normal one, we can make a wrapper:
 
 {% highlight c++ %}
@@ -88,7 +88,7 @@ auto f = [](){...};
 auto f = [](int){...};
 {% endhighlight %}
 
-Yet, we can make a wrapper. The simplest way come to mind is:
+Yet, we can make a wrapper. A simplest way that comes to mind is:
 
 {% highlight c++ %}
 template<class... Fs>
@@ -118,16 +118,16 @@ f();
 f(2);
 {% endhighlight %}
 
-It works fine with clang(3.5), but g++(4.9.1) doesn't buy it.
-Actually, g++ seems to be correct, see this [stackoverflow question](http://stackoverflow.com/questions/5368862/why-do-multiple-inherited-functions-with-same-name-but-different-signatures-not).
+It works fine with clang 3.5, but g++ 4.9.1 doesn't buy it.
+Actually, g++ seems to be correct here, see this [stackoverflow question](http://stackoverflow.com/questions/5368862/why-do-multiple-inherited-functions-with-same-name-but-different-signatures-not).
 
-In short, you have to use `operator()` from the bases explicitly, but it's illegal to write:
+So, we have to use `operator()` from the bases explicitly, but it's illegal to write:
 
 {% highlight c++ %}
 using Fs::operator()...;
 {% endhighlight %}
 
-Instead, we can do:
+Instead, we have to do:
 
 {% highlight c++ %}
 template<class F, class... Fs>
@@ -153,13 +153,15 @@ struct overload<F> : F
 };
 {% endhighlight %}
 
+That's it.
+
 So far I've shown you how to make a recursive lambda and how to overload them, what next?
 Well, let's combine the two :)
 
 ### Recursive and Overloaded Lambda
 
 Recursive template function calls are often not really recursive, actually different functions are called, they just happened to have the same name, at least to the programmer.
-And usually, we need to deal with the special cases by overloading the function. Combing both tricks makes generic lambda as useful as normal function template.
+And usually, we need to deal with the special cases by overloading the function. Combing both tricks makes generic lambda more powerful.
 
 Let's write a helper function that ties them up:
 {% highlight c++ %}
@@ -169,7 +171,7 @@ auto const make_recursive_overload = [](auto&&... fs)
 };
 {% endhighlight %}
 
-Now we can play with it. For instance, let's implement a recursive for_each for variadic param-pack:
+Now we can play with it. For instance, to implement a recursive for_each for variadic param-pack:
 
 {% highlight c++ %}
 auto const for_each = make_recursive_overload
