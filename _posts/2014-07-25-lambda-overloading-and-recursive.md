@@ -9,11 +9,11 @@ tags:
 ---
 
 Lambda expression is very handy, but there're some restrictions -- it can't be overloaded and it can't call itself.
-Well, only at language level. It's completely doable to overload lambdas and make it recursive-enabled, in a library fashion.
+Well, only at language level. Remember we're talking about c++? It's fairly easy to overload lambdas and make it recursive-enabled in a library fashion.
 
 ### Recursive Lambda in C++11
 
-Surely you can already use lambda recursively in c++11, with the help of `std::function`.
+Of course, you can already use lambda recursively in c++11, with the help of `std::function`.
 
 {% highlight c++ %}
 std::function<int(int)> factorial = [&factorial](int i)
@@ -22,7 +22,7 @@ std::function<int(int)> factorial = [&factorial](int i)
 };
 {% endhighlight %}
 
-But then you suffer the runtime penalty of std::function.
+But then you suffer the runtime penalty of `std::function`.
 
 ### Recursive Lambda in C++1y
 
@@ -88,7 +88,7 @@ auto f = [](){...};
 auto f = [](int){...};
 {% endhighlight %}
 
-Yet, we can make a wrapper. A simplest way that comes to mind is:
+Yet, we can make a wrapper. The simplest way that comes to mind is:
 
 {% highlight c++ %}
 template<class... Fs>
